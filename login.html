@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ml">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Login / Register | THRIPUDI LIBRARY</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet"/>
+    <style>
+        :root { --primary-teal: #00897B; --secondary-dark: #004D40; --text-white: #FFFFFF; }
+        * { margin: 0; padding: 0; font-family: 'Poppins', sans-serif; box-sizing: border-box; }
+        
+  .hero { 
+    height: 100vh; 
+    width: 100%; 
+    /* ഒപാസിറ്റി ലെയർ ഒഴിവാക്കി വെറും ഇമേജ് മാത്രം നൽകിയിരിക്കുന്നു */
+    background-image: url(assets/cover/bi.jpg); 
+    background-position: center; 
+    background-size: cover; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    padding: 20px; 
+}
+    
+
+        /* കാർഡിന്റെ വലിപ്പം കുറച്ചു, വെള്ള നിറം നൽകി, പച്ച ഔട്ട്ലൈൻ ചേർത്തു */
+        .form-box { 
+            width: 100%; max-width: 350px; /* വലിപ്പം അല്പം കുറച്ചു */
+            min-height: 480px; position: relative; 
+            background: #FFFFFF; /* കാർഡ് വെള്ള നിറം */
+            border: 2px solid var(--primary-teal); /* നേരിയ പച്ച ഔട്ട്ലൈൻ */
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2); 
+            overflow: hidden; border-radius: 20px; text-align: center; 
+        }
+
+        /* ഹെഡർ ഭാഗം പച്ച നിറത്തിലാക്കി */
+        .form-header { 
+            background: var(--secondary-dark); 
+            padding: 20px 10px; 
+            margin-bottom: 0; 
+        }
+        .form-logo { height: 45px; width: auto; margin-bottom: 8px; }
+        .form-header h2 { color: white; font-size: 1.2em; font-weight: 700; }
+
+        .button-box { width: 220px; margin: 20px auto; position: relative; border-radius: 30px; background: #f0f0f0; display: flex; padding: 5px; }
+        .toggle-btn { padding: 8px 0; cursor: pointer; background: transparent; border: 0; outline: none; position: relative; font-weight: 600; color: #666; flex: 1; z-index: 1; font-size: 13px; }
+        #btn { top: 5px; left: 5px; position: absolute; width: 105px; height: calc(100% - 10px); background: var(--primary-teal); border-radius: 25px; transition: .5s; }
+        
+        /* ആക്ടീവ് ബട്ടണിലെ ടെക്സ്റ്റ് വെള്ളയാക്കാൻ */
+        .active-text { color: white !important; }
+
+        .input-group { position: absolute; width: 85%; transition: .5s; left: 25px; margin-top: 10px; }
+        .input-field { width: 100%; padding: 10px 5px; margin: 5px 0; border: none; border-bottom: 1px solid #ccc; outline: none; background: transparent; color: #333; }
+        .input-field::placeholder { color: #999; }
+        
+        .submit-btn { width: 100%; padding: 10px 0; cursor: pointer; display: block; margin: 20px auto; background: var(--primary-teal); border: 0; border-radius: 30px; color: #fff; font-weight: bold; transition: 0.3s; }
+        .submit-btn:hover { background: var(--secondary-dark); }
+
+        #messageBox { position: absolute; bottom: 10px; width: 100%; left: 0; text-align: center; font-size: 12px; font-weight: 600; }
+        .success { color: #2E7D32; }
+        .error { color: #C62828; }
+        #register { left: 400px; }
+    </style>
+</head>
+<body>
+
+<div class="hero">
+    <div class="form-box">
+        <div class="form-header">
+            <img src="assets/cover/logo.png" class="form-logo" alt="Logo">
+            <h2>THRIPUDI LIBRARY</h2>
+        </div>
+
+        <div class="button-box">
+            <div id="btn"></div>
+            <button class="toggle-btn active-text" id="loginToggle" onclick="openLogin()">Log In</button>
+            <button class="toggle-btn" id="regToggle" onclick="openRegister()">Register</button>
+        </div>
+
+        <form class="input-group" id="login">
+            <input class="input-field" id="loginEmail" placeholder="Email Id" required type="email"/>
+            <input class="input-field" id="loginPassword" placeholder="Password" required type="password"/>
+            <button class="submit-btn" id="loginBtn" type="button">Log In</button>
+            <a style="color:var(--secondary-dark); font-size:11px; cursor:pointer; font-weight:600;" onclick="handleForgot()">Forgot Password?</a>
+        </form>
+
+        <form class="input-group" id="register">
+            <input class="input-field" id="regUser" placeholder="Full Name" required type="text"/>
+            <input class="input-field" id="regEmail" placeholder="Email Id" required type="email"/>
+            <input class="input-field" id="regPassword" placeholder="Password" required type="password"/>
+            <button class="submit-btn" id="regBtn" type="button">Register</button>
+        </form>
+
+        <div id="messageBox"></div>
+    </div>
+</div>
+
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyBzwhpHmeZdLf_nZrcPQirlnpj3Vhg9EqA",
+        authDomain: "thripudilibrary.firebaseapp.com",
+        projectId: "thripudilibrary",
+        storageBucket: "thripudilibrary.firebasestorage.app",
+        messagingSenderId: "887018912750",
+        appId: "1:887018912750:web:cc05190a72b13db816acff"
+    };
+    firebase.initializeApp(firebaseConfig);
+
+    const x = document.getElementById("login");
+    const y = document.getElementById("register");
+    const z = document.getElementById("btn");
+    const lToggle = document.getElementById("loginToggle");
+    const rToggle = document.getElementById("regToggle");
+    const messageBox = document.getElementById("messageBox");
+
+    function showMessage(msg, type) {
+        messageBox.textContent = msg;
+        messageBox.className = type;
+        setTimeout(() => { messageBox.textContent = ""; }, 5000);
+    }
+
+    function openRegister() { 
+        x.style.left = "-400px"; y.style.left = "25px"; z.style.left = "110px"; 
+        rToggle.classList.add("active-text"); lToggle.classList.remove("active-text");
+    }
+    function openLogin() { 
+        x.style.left = "25px"; y.style.left = "400px"; z.style.left = "5px"; 
+        lToggle.classList.add("active-text"); rToggle.classList.remove("active-text");
+    }
+
+    function handleRedirect() {
+        const returnTo = localStorage.getItem('return_to');
+        if (returnTo) {
+            localStorage.removeItem('return_to');
+            window.location.href = returnTo;
+        } else {
+            window.location.href = "dashboard.html";
+        }
+    }
+
+    document.getElementById("loginBtn").onclick = function() {
+        const email = document.getElementById("loginEmail").value;
+        const pass = document.getElementById("loginPassword").value;
+        if(!email || !pass) return showMessage("Fields required", "error");
+        firebase.auth().signInWithEmailAndPassword(email, pass)
+            .then(() => { showMessage("Success!", "success"); handleRedirect(); })
+            .catch(err => showMessage("Error: " + err.message, "error"));
+    };
+
+    document.getElementById("regBtn").onclick = function() {
+        const name = document.getElementById("regUser").value;
+        const email = document.getElementById("regEmail").value;
+        const pass = document.getElementById("regPassword").value;
+        if(!name || !email || !pass) return showMessage("Fields required", "error");
+        firebase.auth().createUserWithEmailAndPassword(email, pass)
+            .then(res => {
+                res.user.updateProfile({ displayName: name }).then(() => {
+                    showMessage("Created!", "success");
+                    handleRedirect();
+                });
+            })
+            .catch(err => showMessage("Failed!", "error"));
+    };
+
+    window.handleForgot = function() {
+        const email = document.getElementById("loginEmail").value;
+        if(!email) return showMessage("Enter email", "error");
+        firebase.auth().sendPasswordResetEmail(email).then(() => showMessage("Check Email!", "success"));
+    };
+</script>
+</body>
+</html>

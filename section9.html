@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ml">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thripudi Library</title>
+    
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    
+    <link rel="stylesheet" href="assets/styles.css">
+    
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    
+    <script src="assets/scripts.js" defer></script>
+</head>
+<body>
+
+    <div class="container">
+        <h1 id="cat-heading" style="color:var(--secondary-dark); text-align:center; margin-top:30px; font-weight: 800;">
+            Agatha Christie
+        </h1>
+        
+        <div id="loading-status" style="text-align:center; color:#666; font-size:0.9em; margin: 20px 0;">
+            പുസ്തകങ്ങൾ ലോഡ് ചെയ്യുന്നു...
+        </div>
+
+        <div id="library-grid" class="library-container">
+            </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            // URL-ൽ cat=agatha_christie എന്ന് ഉറപ്പാക്കുന്നു
+            if (urlParams.get('cat') !== 'section9') {
+                const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?cat=section9';
+                window.history.replaceState({path:newUrl}, '', newUrl);
+            }
+
+            // ലോഡിംഗ് സ്റ്റാറ്റസ് നിയന്ത്രിക്കാൻ
+            const checkData = setInterval(() => {
+                const grid = document.getElementById('library-grid');
+                if (grid && grid.innerHTML.trim() !== "") {
+                    const status = document.getElementById('loading-status');
+                    if(status) status.style.display = 'none';
+                    clearInterval(checkData);
+                }
+            }, 500);
+        });
+    </script>
+
+</body>
+</html>

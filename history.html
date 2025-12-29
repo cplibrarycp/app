@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>History - Thripudi Library</title>
+    <link rel="stylesheet" href="assets/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+</head>
+<body>
+
+    <main class="container" style="min-height: 80vh; padding-top: 100px; padding-bottom: 50px;">
+        <div class="section-header" style="text-align: center; margin-bottom: 40px;">
+            <h2 id="cat-heading" style="color: #004D40; font-weight: 800; font-size: 2em;">നിങ്ങളുടെ വായനാ ചരിത്രം</h2>
+            <div style="width: 50px; height: 3px; background: #00897B; margin: 10px auto;"></div>
+            <p style="color: #666; font-size: 0.95em;">നിങ്ങൾ അവസാനമായി സന്ദർശിച്ച പുസ്തകങ്ങൾ ഇവിടെ കാണാം. ആവശ്യമില്ലാത്തവ നീക്കം ചെയ്യാം.</p>
+        </div>
+
+        <div id="history-grid" class="library-container"></div>
+
+        <div id="loading-status" style="text-align: center; padding: 50px;">
+            <i class="fas fa-spinner fa-spin" style="font-size: 2em; color: #00897B;"></i>
+            <p>ചരിത്രം ശേഖരിക്കുന്നു...</p>
+        </div>
+
+        <div id="empty-history" style="display:none; text-align: center; padding: 50px;">
+            <i class="fas fa-book-open" style="font-size: 3em; color: #ccc; margin-bottom: 15px;"></i>
+            <p style="color: #888;">നിലവിൽ ഹിസ്റ്ററി ഒന്നും ലഭ്യമല്ല.</p>
+            <button onclick="window.location.href='dashboard.html'" class="overlay-btn" style="margin-top: 15px; background:#004D40; color:white; padding:10px 20px; border:none; border-radius:5px; cursor:pointer;">പുസ്തകങ്ങൾ കാണുക</button>
+        </div>
+    </main>
+
+    <script src="assets/scripts.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => { displayHistory(); }, 1000);
+        });
+
+        function displayHistory() {
+            const historyGrid = document.getElementById('history-grid');
+            const emptyMsg = document.getElementById('empty-history');
+            const loading = document.getElementById('loading-status');
+            
+            const history = JSON.parse(localStorage.getItem('thripudi_history') || '[]');
+            if (loading) loading.style.display = 'none';
+
+            if (history.length === 0) {
+                historyGrid.innerHTML = "";
+                if (emptyMsg) emptyMsg.style.display = 'block';
+                return;
+            }
+
+            if (emptyMsg) emptyMsg.style.display = 'none';
+
+            historyGrid.innerHTML = history.slice().reverse().map(book => `
+                <div class="book-card" id="hist-${book.id}" style="position:relative;">
+                    <div onclick="removeFromHistory('${book.id}')" style="position:absolute; top:5px; right:5px; background:rgba(255,0,0,0.8); color:white; width:25px; height:25px; border-radius:50%; display:flex; justify-content:center; align-items:center; cursor:pointer; z-index:100; font-size:12px; transition:0.3s;" title="നീക്കം ചെയ്യുക">
+                        <i class="fas fa-trash"></i>
+                    </div>
+                    
+                    <div class="image-wrapper">
+                        <img class="book-cover" src="${book.img}" onerror="this.src='assets/cover/default.jpg'">
+                        <div class="read-overlay">
+                            <button class="overlay-btn" onclick="checkAccess('${book.id}', '${book.type}', '${book.title}', '${book.img}')">തുടങ്ങുക</button>
+                        </div>
+                    </div>
+                    <div class="book-title">${book.title}</div>
+                    <div style="font-size: 0.7em; color: #999; margin-top: 5px; text-align: center;">
+                        ${new Date(book.timestamp).toLocaleDateString()}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // ഹിസ്റ്ററിയിൽ നിന്ന് ഒരു ഐറ്റം മാത്രം നീക്കം ചെയ്യാൻ
+        function removeFromHistory(id) {
+            let history = JSON.parse(localStorage.getItem('thripudi_history') || '[]');
+            history = history.filter(item => item.id !== id);
+            localStorage.setItem('thripudi_history', JSON.stringify(history));
+            displayHistory(); // ലിസ്റ്റ് അപ്‌ഡേറ്റ് ചെയ്യുന്നു
+        }
+    </script>
+</body>
+</html>

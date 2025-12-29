@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Thripudi Library</title>
+    <link rel="stylesheet" href="assets/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <style>
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            padding: 40px 20px;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        .dash-card {
+            background: #fff;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border: 1px solid #eee;
+            transition: 0.3s;
+            cursor: pointer;
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .dash-card:hover {
+            transform: translateY(-5px);
+            border-color: #00897B;
+            box-shadow: 0 8px 25px rgba(0,137,123,0.1);
+        }
+        .dash-icon {
+            font-size: 3em;
+            color: #00897B;
+            margin-bottom: 15px;
+        }
+        .dash-title {
+            color: #004D40;
+            font-weight: 700;
+            font-size: 1.2em;
+            margin-bottom: 8px;
+        }
+        .dash-desc {
+            color: #777;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+
+    <main class="container">
+        <div style="text-align: center; margin-top: 40px;">
+            <h2 style="color: #004D40; font-weight: 800;">സ്വാഗതം, <span id="welcome-name">അതിഥി</span></h2>
+            <p style="color: #666;">വായനയുടെ ലോകത്തേക്ക് വീണ്ടും സ്വാഗതം!</p>
+        </div>
+
+        <div class="dashboard-grid">
+            
+            <a href="history.html" class="dash-card">
+                <i class="fas fa-history dash-icon"></i>
+                <div class="dash-title">വായനാ ചരിത്രം</div>
+                <div class="dash-desc">നിങ്ങൾ അവസാനമായി സന്ദർശിച്ച പുസ്തകങ്ങൾ.</div>
+            </a>
+
+            <a href="category.html?cat=novel" class="dash-card">
+                <i class="fas fa-book dash-icon"></i>
+                <div class="dash-title">നോവലുകൾ</div>
+                <div class="dash-desc">മലയാളത്തിലെ മികച്ച നോവലുകൾ വായിക്കാം.</div>
+            </a>
+
+            <a href="category.html?cat=audiobooks" class="dash-card">
+                <i class="fas fa-headphones dash-icon"></i>
+                <div class="dash-title">ഓഡിയോ ബുക്കുകൾ</div>
+                <div class="dash-desc">മനോഹരമായ കഥകൾ കേൾക്കാം.</div>
+            </a>
+<a href="category.html?cat=videobook" class="dash-card">
+    <i class="fas fa-video dash-icon"></i>
+    <div class="dash-title">വീഡിയോ ബുക്കുകൾ</div>
+    <div class="dash-desc">കാണാനും കേൾക്കാനും സാധിക്കുന്ന പുസ്തകങ്ങൾ.</div>
+</a>
+
+            <a href="collection.html" class="dash-card">
+                <i class="fas fa-th-large dash-icon"></i>
+                <div class="dash-title">സമ്പൂർണ്ണ ശേഖരം</div>
+                <div class="dash-desc">എല്ലാ കാറ്റഗറികളും ഒരിടത്ത് കാണുക.</div>
+            </a>
+
+        </div>
+    </main>
+
+    <script src="assets/scripts.js"></script>
+    <script>
+        // ലോഗിൻ ചെയ്ത പേര് കാണിക്കാൻ
+        firebase.auth().onAuthStateChanged(user => {
+            if (user) {
+                document.getElementById('welcome-name').innerText = user.displayName ? user.displayName.split(' ')[0] : "User";
+            }
+        });
+    </script>
+</body>
+</html>
