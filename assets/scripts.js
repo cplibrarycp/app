@@ -1,4 +1,4 @@
-/* Project Logic - Full Master Script | All White Footer Text & Icons */
+/* Project Logic - Full Master Script | Fixed Button Click & UI Polish */
 
 const firebaseConfig = { 
     apiKey: "AIzaSyBzwhpHmeZdLf_nZrcPQirlnpj3Vhg9EqA", 
@@ -15,6 +15,7 @@ const scriptURL = 'https://script.google.com/macros/s/AKfycbxmVIIRQ1cObdwwpAxZl9
 const bgMusic = new Audio('assets/cover/bg.mp3');
 bgMusic.loop = true;
 let isMusicPlaying = false;
+let currentMediaId = null;
 
 document.addEventListener('DOMContentLoaded', () => {
     injectMasterTemplate(); 
@@ -27,6 +28,8 @@ document.addEventListener('DOMContentLoaded', () => {
         fetchLibraryData(); 
     }
 });
+
+// --- GLOBAL FUNCTIONS ---
 
 window.toggleMusic = function() {
     const icon = document.getElementById('music-icon');
@@ -55,6 +58,66 @@ window.handleLoginSuccess = function() {
         window.location.href = 'dashboard.html';
     }
 };
+
+window.playMediaInline = function(id, type, title, img) {
+    if (!firebase.auth().currentUser) { 
+        document.getElementById('loginAlertModal').style.display = 'flex'; 
+        return; 
+    }
+    if (currentMediaId) stopMediaInline(currentMediaId);
+    window.addToHistory(id, type, title, img);
+    const p = document.getElementById(`player-${id}`), o = document.getElementById(`overlay-${id}`), f = document.getElementById(`iframe-${id}`);
+    if (p && f) { 
+        f.src = `https://drive.google.com/file/d/${id}/preview`; 
+        p.style.display = 'flex'; 
+        o.style.display = 'none'; 
+        currentMediaId = id; 
+    }
+};
+
+window.stopMediaInline = function(id) {
+    const p = document.getElementById(`player-${id}`), o = document.getElementById(`overlay-${id}`), f = document.getElementById(`iframe-${id}`);
+    if (p && f) { 
+        p.style.display = 'none'; 
+        o.style.display = 'flex'; 
+        f.src = ""; 
+        currentMediaId = null; 
+    }
+};
+
+window.checkAccess = function(id, type, title, img) {
+    if (!firebase.auth().currentUser) { 
+        document.getElementById('loginAlertModal').style.display = 'flex'; 
+        return; 
+    }
+    window.addToHistory(id, type, title, img);
+    document.getElementById('modalBookTitle').innerText = title;
+    document.getElementById('mediaFrame').src = `https://drive.google.com/file/d/${id}/preview?rm=minimal`;
+    document.getElementById('mediaModal').style.display = 'flex';
+};
+
+window.addToHistory = (id, type, title, img) => {
+    let history = JSON.parse(localStorage.getItem('thripudi_history') || '[]');
+    history = history.filter(item => item.id !== id);
+    history.push({ id, type, title, img, timestamp: Date.now() });
+    if (history.length > 20) history.shift();
+    localStorage.setItem('thripudi_history', JSON.stringify(history));
+};
+
+window.closeMediaModal = () => { 
+    document.getElementById('mediaModal').style.display = 'none'; 
+    document.getElementById('mediaFrame').src = ""; 
+};
+
+window.logoutUser = () => { 
+    firebase.auth().signOut().then(() => window.location.href = "logout_success.html"); 
+};
+
+window.exitApp = function() { 
+    if (window.Android) window.Android.closeApp(); else window.close(); 
+};
+
+// --- DATA FETCH & RENDER ---
 
 async function fetchLibraryData() {
     const cached = localStorage.getItem('thripudi_cache');
@@ -112,6 +175,8 @@ function renderBooks(searchTerm = "") {
     }
 }
 
+// --- TEMPLATE INJECTION ---
+
 function injectMasterTemplate() {
     const isAndroid = /Android/i.test(navigator.userAgent);
     const exitBtn = isAndroid ? `<button onclick="exitApp()" style="background:none; border:none; color:white; margin-left:8px; cursor:pointer; font-size:1em;"><i class="fas fa-power-off"></i></button>` : '';
@@ -125,14 +190,8 @@ function injectMasterTemplate() {
         footer { background: #004D40; color: white; padding: 20px 0; flex-shrink: 0; }
         .footer-container { max-width: 1200px; margin: 0 auto; text-align: center; }
         .footer-row { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 5px; }
-        /* ഫൂട്ടർ വെള്ള നിറം & വലുപ്പം */
-        .footer-row a, .footer-row i, .footer-row span, .footer-copy { 
-            font-size: 0.55em !important; 
-            color: #ffffff !important; 
-            opacity: 1; 
-            text-decoration: none; 
-        }
-        .footer-row i { font-size: 1.4em !important; } /* സോഷ്യൽ ഐക്കൺ അല്പം കൂടി വലുതാക്കി */
+        .footer-row a, .footer-row i, .footer-row span, .footer-copy { font-size: 0.55em !important; color: #ffffff !important; opacity: 1; text-decoration: none; }
+        .footer-row i { font-size: 1.4em !important; }
         .footer-copy { margin-top: 5px; opacity: 0.8; }
         .nav-item { text-decoration: none; color: white; font-size: 0.85em; margin-right: 10px; font-weight: 500; }
         .music-btn { background: none; border: none; color: white; margin-right: 10px; cursor: pointer; font-size: 1em; }
@@ -193,7 +252,6 @@ function injectMasterTemplate() {
     window.onclick = () => { if(dd) dd.style.display = 'none'; };
 }
 
-// ... (മറ്റു ഫങ്ക്ഷനുകളിൽ മാറ്റമില്ല)
 function setupAuthObserver() {
     if (typeof firebase !== 'undefined') {
         firebase.auth().onAuthStateChanged(user => {
@@ -203,24 +261,3 @@ function setupAuthObserver() {
         });
     }
 }
-window.addToHistory = (id, type, title, img) => {
-    let history = JSON.parse(localStorage.getItem('thripudi_history') || '[]');
-    history = history.filter(item => item.id !== id);
-    history.push({ id, type, title, img, timestamp: Date.now() });
-    if (history.length > 20) history.shift();
-    localStorage.setItem('thripudi_history', JSON.stringify(history));
-};
-window.playMediaInline = (id, type, title, img) => {
-    if (!firebase.auth().currentUser) { document.getElementById('loginAlertModal').style.display = 'flex'; return; }
-    if (currentMediaId) stopMediaInline(currentMediaId);
-    window.addToHistory(id, type, title, img);
-    const p = document.getElementById(`player-${id}`), o = document.getElementById(`overlay-${id}`), f = document.getElementById(`iframe-${id}`);
-    if (p && f) { f.src = `https://drive.google.com/file/d/${id}/preview`; p.style.display = 'flex'; o.style.display = 'none'; currentMediaId = id; }
-};
-window.stopMediaInline = function(id) {
-    const p = document.getElementById(`player-${id}`), o = document.getElementById(`overlay-${id}`), f = document.getElementById(`iframe-${id}`);
-    if (p && f) { p.style.display = 'none'; o.style.display = 'flex'; f.src = ""; currentMediaId = null; }
-};
-window.closeMediaModal = () => { document.getElementById('mediaModal').style.display = 'none'; document.getElementById('mediaFrame').src = ""; };
-window.logoutUser = () => { firebase.auth().signOut().then(() => window.location.href = "logout_success.html"); };
-window.exitApp = function() { if (window.Android) window.Android.closeApp(); else window.close(); };
