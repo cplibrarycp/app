@@ -1,7 +1,6 @@
 /* Project Logic - Full Master Script | Fixed Page Load & Audio Player */
 
-const firebaseConfig = { 
-    apiKey: "AIzaSmeZdLf_nZrcPQirlnpj3Vhg9EqA", 
+const firebaseConfPQirlnpj3Vhg9EqA", 
     authDomain: "thripudilibrary.firebaseapp.com", 
     projectId: "thripudilibrary", 
     storageBucket: "thripudilibrary.firebasestorage.app", 
@@ -227,4 +226,5 @@ function setupAuthObserver() {
 window.closeMediaModal = () => { document.getElementById('mediaModal').style.display = 'none'; document.getElementById('mediaFrame').src = ""; };
 window.logoutUser = () => firebase.auth().signOut().then(() => window.location.href = "logout_success.html");
 window.exitApp = () => { if (window.Android) window.Android.closeApp(); else window.close(); };
+
 
